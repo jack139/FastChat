@@ -305,7 +305,8 @@ def load_model(
         "xpu",
         "npu",
     ):
-        model.to(device)
+        if 'qwen-14b' not in model_path.lower():
+            model.to(device)
 
     if device == "xpu":
         model = torch.xpu.optimize(model, dtype=kwargs["torch_dtype"], inplace=True)
@@ -1413,6 +1414,7 @@ class QwenChatAdapter(BaseModelAdapter):
             config=config,
             low_cpu_mem_usage=True,
             trust_remote_code=True,
+            load_in_4bit=True if 'qwen-14b' in model_path.lower() else False, # for 14B
             **from_pretrained_kwargs,
         ).eval()
         if hasattr(model.config, "use_dynamic_ntk") and model.config.use_dynamic_ntk:
